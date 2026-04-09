@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andrii Ptashkohrai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Andrii Ptashkohrai</h1>
+      <p class="subtitle">Cybersecurity Engineer & AI Integration Specialist</p>
+      
+      <div class="btn-group">
+        
+          <a href="https://github.com/XterryIT" target="_blank" class="btn">GitHub</a>
+        
+          <a href="https://www.linkedin.com/in/ptashkohrai-andrii/" target="_blank" class="btn">LinkedIn</a>
+        
+          <a href="https://tryhackme.com/p/S3crEt.aNdr11" target="_blank" class="btn">TryHackMe</a>
+        
+      </div>
+    </header>
+    
+    <main>
+      <h1 id="business-centric-cloud-risk-assessment--disaster-recovery">Business-Centric Cloud Risk Assessment &amp; Disaster Recovery</h1>
+
+<p>In enterprise environments, cybersecurity is fundamentally about risk management. This project demonstrates the ability to translate technical vulnerabilities into quantifiable business impacts. I conducted a comprehensive threat modeling and risk assessment for an e-commerce application deployed on <strong>Google Cloud Platform (GCP)</strong>, culminating in the design of robust Disaster Recovery (DRP) and Business Continuity (BCP) plans.</p>
+
+<h2 id="️-cloud-architecture--threat-landscape">🏗️ Cloud Architecture &amp; Threat Landscape</h2>
+
+<p>The assessed infrastructure was a modern, containerized e-commerce platform:</p>
+<ul>
+  <li><strong>Compute:</strong> Kubernetes (GKE) running Django/Gunicorn containers.</li>
+  <li><strong>Database:</strong> PostgreSQL accessed securely via Cloud SQL Proxy.</li>
+  <li><strong>Network &amp; Security:</strong> VPC peering, Ingress NGINX with Let’s Encrypt TLS, and <strong>Google Cloud Armor</strong> for WAF/DDoS protection.</li>
+</ul>
+
+<p>The primary threat landscape included OWASP Top 10 vulnerabilities (XSS, SQLi), volumetric DDoS attacks, cloud misconfigurations, and catastrophic regional outages.</p>
+
+<h2 id="-risk-analysis--mitigation-strategy">📊 Risk Analysis &amp; Mitigation Strategy</h2>
+
+<p>Instead of merely listing vulnerabilities, risks were evaluated based on their probability and potential financial impact on the e-commerce operations.</p>
+
+<h3 id="1-infrastructure-security--network-isolation">1. Infrastructure Security &amp; Network Isolation</h3>
+<ul>
+  <li><strong>Identified Risk:</strong> Direct database exposure and lateral movement within the cloud environment.</li>
+  <li><strong>Mitigation Implemented:</strong> Enforced strict VPC firewall rules allowing only HTTP/HTTPS traffic to the load balancer. The Cloud SQL database has <strong>no public IP</strong> and is exclusively accessible via the Cloud SQL Proxy from authenticated backend instances.</li>
+</ul>
+
+<h3 id="2-application-security-appsec">2. Application Security (AppSec)</h3>
+<ul>
+  <li><strong>Identified Risk:</strong> Client-side attacks (XSS, CSRF) leading to customer session hijacking and data breaches.</li>
+  <li><strong>Mitigation Implemented:</strong> Enforcement of strict Content Security Policies (CSP), regular container image scanning in GKE, and mandatory Multi-Factor Authentication (MFA) for administrative API access.</li>
+</ul>
+
+<h3 id="3-availability--ddos-protection">3. Availability &amp; DDoS Protection</h3>
+<ul>
+  <li><strong>Identified Risk:</strong> Application downtime resulting in immediate revenue loss during volumetric or application-layer DDoS attacks.</li>
+  <li><strong>Mitigation Implemented:</strong> Integration of Google Cloud Armor at the edge to filter malicious traffic, apply geoblocking, and rate-limit suspicious IP ranges.</li>
+</ul>
+
+<h2 id="-disaster-recovery-drp--business-continuity-bcp">🔄 Disaster Recovery (DRP) &amp; Business Continuity (BCP)</h2>
+
+<p>A security architecture is incomplete without a resilient recovery strategy. I defined critical business metrics and actionable recovery procedures:</p>
+
+<ul>
+  <li><strong>RTO (Recovery Time Objective):</strong> &lt;= 24 hours. The maximum acceptable downtime before the business suffers irreversible reputational and financial damage.</li>
+  <li><strong>RPO (Recovery Point Objective):</strong> &lt;= 3 hours. Ensured by automated, incremental database backups running every 6 hours and transaction log archiving.</li>
+  <li><strong>Failover Strategy:</strong> In the event of a total GCP region failure, the DRP mandates automated DNS failover to a secondary standby region.</li>
+  <li><strong>Testing:</strong> Established a schedule for monthly “Tabletop Drills” to test incident communication and backup restoration procedures.</li>
+</ul>
+
+<h2 id="-conclusions--business-value">📉 Conclusions &amp; Business Value</h2>
+
+<p>This assessment bridges the gap between DevOps and executive stakeholders. By implementing Cloud Armor, VPC isolation, and strict DRP metrics, the organization not only secures its infrastructure against advanced threats but also ensures regulatory compliance and guarantees business continuity during critical incidents.</p>
+
+<div class="back-link-container">
+  <a href="/" class="btn-back">← Back to Home</a>
+</div>
+
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andrii Ptashkohrai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Andrii Ptashkohrai</h1>
+      <p class="subtitle">Cybersecurity Engineer & AI Integration Specialist</p>
+      
+      <div class="btn-group">
+        
+          <a href="https://github.com/XterryIT" target="_blank" class="btn">GitHub</a>
+        
+          <a href="https://www.linkedin.com/in/ptashkohrai-andrii/" target="_blank" class="btn">LinkedIn</a>
+        
+          <a href="https://tryhackme.com/p/S3crEt.aNdr11" target="_blank" class="btn">TryHackMe</a>
+        
+      </div>
+    </header>
+    
+    <main>
+      <h1 id="digital-forensics-metadata-extraction--encrypted-volume-analysis">Digital Forensics: Metadata Extraction &amp; Encrypted Volume Analysis</h1>
+
+<p>In the realm of Digital Forensics and Incident Response (DFIR), preserving the chain of custody and extracting hidden file attributes are critical during an investigation. This project showcases the development of automated Python tooling for metadata extraction and the application of low-level disk analysis to identify encrypted volumes.</p>
+
+<h2 id="️‍️-project-scope--tooling">🕵️‍♂️ Project Scope &amp; Tooling</h2>
+
+<ul>
+  <li><strong>Objective:</strong> Automate the extraction of hidden metadata (EXIF, PDF parameters), generate cryptographic hashes for evidence integrity, and identify BitLocker-encrypted partitions using raw hex analysis.</li>
+  <li><strong>Forensic Tools:</strong> FTK Imager, Autopsy, HxD (Hex Editor).</li>
+  <li><strong>Development Stack:</strong> Python (<code class="language-plaintext highlighter-rouge">PyPDF2</code>, <code class="language-plaintext highlighter-rouge">Pillow</code>, <code class="language-plaintext highlighter-rouge">hashlib</code>, <code class="language-plaintext highlighter-rouge">os</code>).</li>
+</ul>
+
+<h2 id="️-automated-forensic-toolkit-python">⚙️ Automated Forensic Toolkit (Python)</h2>
+
+<p>To streamline the investigation process, I developed a Python script capable of recursively scanning directories, extracting metadata from various file formats (Images, PDFs, Word documents), and calculating SHA-256 hashes to ensure data integrity for court-admissible evidence.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">os</span>
+<span class="kn">import</span> <span class="n">hashlib</span>
+<span class="kn">from</span> <span class="n">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="n">PIL.ExifTags</span> <span class="kn">import</span> <span class="n">TAGS</span>
+<span class="kn">from</span> <span class="n">PyPDF2</span> <span class="kn">import</span> <span class="n">PdfReader</span>
+
+<span class="k">def</span> <span class="nf">calculate_sha256</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+    <span class="sh">"""</span><span class="s">Generates a SHA-256 hash to ensure forensic integrity of the file.</span><span class="sh">"""</span>
+    <span class="n">sha256_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="p">.</span><span class="nf">sha256</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nf">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="sh">"</span><span class="s">rb</span><span class="sh">"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">byte_block</span> <span class="ow">in</span> <span class="nf">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">f</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="mi">4096</span><span class="p">),</span> <span class="sa">b</span><span class="sh">""</span><span class="p">):</span>
+            <span class="n">sha256_hash</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">byte_block</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sha256_hash</span><span class="p">.</span><span class="nf">hexdigest</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">extract_image_metadata</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+    <span class="sh">"""</span><span class="s">Extracts hidden EXIF data (GPS, Camera Model, Timestamps) from images.</span><span class="sh">"""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+        <span class="n">exif_data</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="nf">getexif</span><span class="p">()</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">exif_data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">tag_id</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">exif_data</span><span class="p">.</span><span class="nf">items</span><span class="p">():</span>
+                <span class="n">tag_name</span> <span class="o">=</span> <span class="n">TAGS</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">tag_id</span><span class="p">,</span> <span class="n">tag_id</span><span class="p">)</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="n">tag_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">metadata</span>
+    <span class="k">except</span> <span class="nb">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="sh">"</span><span class="s">Error reading image: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="sh">"</span>
+
+<span class="k">def</span> <span class="nf">extract_pdf_metadata</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">):</span>
+    <span class="sh">"""</span><span class="s">Extracts author, creation date, and software used from PDF files.</span><span class="sh">"""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="nc">PdfReader</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">)</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">reader</span><span class="p">.</span><span class="n">metadata</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">.</span><span class="nf">strip</span><span class="p">(</span><span class="sh">'</span><span class="s">/</span><span class="sh">'</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">.</span><span class="nf">items</span><span class="p">()}</span> <span class="k">if</span> <span class="n">meta</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">except</span> <span class="nb">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="sh">"</span><span class="s">Error reading PDF: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="sh">"</span>
+
+<span class="c1"># Example Usage in an investigation pipeline:
+# file_hash = calculate_sha256("evidence/suspect_photo.jpg")
+# print(f"[*] Evidence Integrity Hash (SHA-256): {file_hash}")
+</span></code></pre></div></div>
+
+<h2 id="-low-level-drive-encryption-analysis">🔐 Low-Level Drive Encryption Analysis</h2>
+
+<p>Identifying whether a seized drive is encrypted (and what type of encryption is used) is the first step in digital forensics. Standard OS tools often fail to provide this context without mounting the drive, which risks altering the evidence.</p>
+
+<p><strong>The Process:</strong></p>
+<ol>
+  <li><strong>Imaging:</strong> Created a bit-by-bit forensic image (<code class="language-plaintext highlighter-rouge">.dd</code> / <code class="language-plaintext highlighter-rouge">.E01</code>) of the suspect USB drive using <strong>FTK Imager</strong> to preserve the original state.</li>
+  <li><strong>Hex Analysis:</strong> Instead of relying on Windows Explorer, I analyzed the raw binary structure of the disk image using <strong>HxD</strong>.</li>
+  <li><strong>Signature Detection:</strong> By examining the boot sector and volume headers at the hexadecimal level, I successfully identified the ASCII signature <code class="language-plaintext highlighter-rouge">-FVE-FS-</code> (Full Volume Encryption File System), definitively confirming the presence of Microsoft <strong>BitLocker</strong> encryption.</li>
+</ol>
+
+<h2 id="-conclusions--takeaways">📉 Conclusions &amp; Takeaways</h2>
+
+<ul>
+  <li><strong>Integrity is Paramount:</strong> The use of cryptographic hashing (<code class="language-plaintext highlighter-rouge">MD5</code>/<code class="language-plaintext highlighter-rouge">SHA-256</code>) immediately upon evidence acquisition is non-negotiable to maintain the chain of custody.</li>
+  <li><strong>Automation Speeds Triage:</strong> Manual metadata extraction is unscalable during a major incident. Custom Python scripts drastically reduce the time needed to triage hundreds of files.</li>
+  <li><strong>Low-Level Knowledge:</strong> Relying solely on GUI tools is a vulnerability for an investigator. Understanding raw file systems and hexadecimal signatures is crucial for bypassing standard OS limitations and identifying encrypted containers.</li>
+</ul>
+
+<div class="back-link-container">
+  <a href="/" class="btn-back">← Back to Home</a>
+</div>
+
+    </main>
+  </div>
+</body>
+</html>

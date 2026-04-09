@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andrii Ptashkohrai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Andrii Ptashkohrai</h1>
+      <p class="subtitle">Cybersecurity Engineer & AI Integration Specialist</p>
+      
+      <div class="btn-group">
+        
+          <a href="https://github.com/XterryIT" target="_blank" class="btn">GitHub</a>
+        
+          <a href="https://www.linkedin.com/in/ptashkohrai-andrii/" target="_blank" class="btn">LinkedIn</a>
+        
+          <a href="https://tryhackme.com/p/S3crEt.aNdr11" target="_blank" class="btn">TryHackMe</a>
+        
+      </div>
+    </header>
+    
+    <main>
+      <h1 id="ai-powered-soc-automation-integrating-wazuh-siem-with-local-llms">AI-Powered SOC Automation: Integrating Wazuh SIEM with Local LLMs</h1>
+
+<p>In modern Security Operations Centers (SOC), alert fatigue is a critical issue. To address this, I designed and implemented a custom SOAR-like architecture that integrates <strong>Wazuh SIEM</strong> with a <strong>local Large Language Model (Ollama)</strong> to automatically analyze web attacks in real-time without sending sensitive data to external APIs.</p>
+
+<h2 id="️-architecture--infrastructure">🏗️ Architecture &amp; Infrastructure</h2>
+
+<p>The lab environment was built using a multi-node setup connected via a ZeroTier VPN:</p>
+<ul>
+  <li><strong>Honeypot Target:</strong> A vulnerable Django web application running in Docker (Ubuntu VM).</li>
+  <li><strong>SIEM Manager:</strong> Wazuh Server (Ubuntu Server VM).</li>
+  <li><strong>AI Engine:</strong> Mac mini M4 running Ollama (testing <code class="language-plaintext highlighter-rouge">qwen2.5:14b</code> and <code class="language-plaintext highlighter-rouge">llama3.1:8b</code> models).</li>
+  <li><strong>Attacker:</strong> Kali Linux instance.</li>
+</ul>
+
+<h2 id="️-the-integration-engine">⚙️ The Integration Engine</h2>
+
+<p>The core of the project is a Python script that acts as an integration hook within Wazuh. It intercepts high-priority alerts, strips unnecessary ANSI escape codes, and queries the local AI model for an incident summary, threat level, and remediation steps.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env python3
+</span><span class="kn">import</span> <span class="n">sys</span>
+<span class="kn">import</span> <span class="n">json</span>
+<span class="kn">import</span> <span class="n">requests</span>
+<span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="n">re</span>
+
+<span class="c1"># --- CONFIGURATION ---
+</span><span class="n">AI_URL</span> <span class="o">=</span> <span class="sh">"</span><span class="s">[http://192.168.100.39:11434/api/generate](http://192.168.100.39:11434/api/generate)</span><span class="sh">"</span>
+<span class="n">AI_MODEL</span> <span class="o">=</span> <span class="sh">"</span><span class="s">qwen2.5:14b</span><span class="sh">"</span>
+<span class="n">OUTPUT_FILE</span> <span class="o">=</span> <span class="sh">"</span><span class="s">/var/ossec/logs/ai_responses.json</span><span class="sh">"</span>
+
+<span class="k">def</span> <span class="nf">clean_log</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="c1"># Remove ANSI escape sequences that confuse the LLM
+</span>    <span class="n">ansi_escape</span> <span class="o">=</span> <span class="n">re</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="sa">r</span><span class="sh">'</span><span class="s">\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])</span><span class="sh">'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ansi_escape</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sh">''</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># 1. Read the alert file provided by Wazuh
+</span>    <span class="n">alert_file</span> <span class="o">=</span> <span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nf">open</span><span class="p">(</span><span class="n">alert_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">alert</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">rule_desc</span> <span class="o">=</span> <span class="n">alert</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">rule</span><span class="sh">'</span><span class="p">,</span> <span class="p">{}).</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">description</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">N/A</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">full_log</span> <span class="o">=</span> <span class="n">alert</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">full_log</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">N/A</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">clean_full_log</span> <span class="o">=</span> <span class="nf">clean_log</span><span class="p">(</span><span class="n">full_log</span><span class="p">)</span>
+
+    <span class="c1"># 2. Prepare the prompt for the local LLM
+</span>    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="sh">"""</span><span class="s">
+    You are a cybersecurity expert. Analyze the event.
+    Event: </span><span class="si">{</span><span class="n">rule_desc</span><span class="si">}</span><span class="s">
+    Log: </span><span class="si">{</span><span class="n">clean_full_log</span><span class="si">}</span><span class="s">
+    Provide:
+    1. Attack description
+    2. Threat Level (0-10)
+    3. Recommendations
+    </span><span class="sh">"""</span>
+    
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="sh">"</span><span class="s">model</span><span class="sh">"</span><span class="p">:</span> <span class="n">AI_MODEL</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">prompt</span><span class="sh">"</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">stream</span><span class="sh">"</span><span class="p">:</span> <span class="bp">False</span>
+    <span class="p">}</span>
+
+    <span class="c1"># 3. Send request (Timeout extended to 120s for local processing)
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span><span class="n">AI_URL</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="nf">json</span><span class="p">().</span><span class="nf">get</span><span class="p">(</span><span class="sh">"</span><span class="s">response</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">No response from AI</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># 4. Save the result back for the Wazuh Dashboard
+</span>    <span class="n">wazuh_event</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="sh">"</span><span class="s">timestamp</span><span class="sh">"</span><span class="p">:</span> <span class="n">datetime</span><span class="p">.</span><span class="n">datetime</span><span class="p">.</span><span class="nf">now</span><span class="p">().</span><span class="nf">isoformat</span><span class="p">(),</span>
+        <span class="sh">"</span><span class="s">ai_analysis</span><span class="sh">"</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">analysis_result</span><span class="sh">"</span><span class="p">:</span> <span class="n">answer</span>
+    <span class="p">}</span>
+
+    <span class="k">with</span> <span class="nf">open</span><span class="p">(</span><span class="n">OUTPUT_FILE</span><span class="p">,</span> <span class="sh">"</span><span class="s">a</span><span class="sh">"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="sh">'</span><span class="s">utf-8</span><span class="sh">'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="n">wazuh_event</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">f</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="k">except</span> <span class="nb">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">pass</span>
+</code></pre></div></div>
+
+<h2 id="️-custom-threat-detection-rules">🛡️ Custom Threat Detection Rules</h2>
+
+<p>Standard Wazuh rules lack specific signatures for custom Django applications. I authored custom XML rules (<code class="language-plaintext highlighter-rouge">local_rules.xml</code>) using PCRE2 regular expressions and HEX encoding to bypass XML syntax limitations (e.g., using <code class="language-plaintext highlighter-rouge">\x3C</code> for <code class="language-plaintext highlighter-rouge">&lt;</code>).</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;rule</span> <span class="na">id=</span><span class="s">"100008"</span> <span class="na">level=</span><span class="s">"12"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;if_sid&gt;</span>100005<span class="nt">&lt;/if_sid&gt;</span>
+  <span class="nt">&lt;regex</span> <span class="na">type=</span><span class="s">"pcre2"</span><span class="nt">&gt;</span>(?i)(%3Cscript%3E|\x3Cscript|script\x3E|src=javascript:|javascript:|on(load|error|click|mouseover|focus|submit)=|\x3Ciframe|\x3Cobject|\x3Cembed|\x3Csvg|\x3Cimg.*?onerror)<span class="nt">&lt;/regex&gt;</span>
+  <span class="nt">&lt;description&gt;</span>Django Attack: Advanced XSS Attempt<span class="nt">&lt;/description&gt;</span>
+<span class="nt">&lt;/rule&gt;</span>
+</code></pre></div></div>
+
+<h2 id="-challenges--lessons-learned">📉 Challenges &amp; Lessons Learned</h2>
+
+<p>While the system successfully achieved a 100% detection rate on simulated SQLi, XSS, and RCE attacks, the integration phase revealed several critical engineering challenges:</p>
+
+<ol>
+  <li><strong>The “AI Loop” Bug:</strong> Initially, the system created an infinite loop. Wazuh triggers scripts for alerts level 10+, and the AI’s response was also being ingested as a level 10 alert, causing the AI to analyze its own responses. <em>Solution: Implemented strict filtering rules to exclude AI-generated logs from triggering the integration script.</em></li>
+  <li><strong>Processing Latency under Load:</strong> During an automated DirBuster scan generating over 14,000 requests, the AI processing queue became a massive bottleneck. While XSS alerts were processed in 30 minutes, SQLi alerts faced a latency of up to 2 hours. <em>Takeaway: Local LLMs require robust event deduplication and rate-limiting before the prompt generation stage to remain viable in high-traffic environments.</em></li>
+</ol>
+
+<div class="back-link-container">
+  <a href="/" class="btn-back">← Back to Home</a>
+</div>
+
+    </main>
+  </div>
+</body>
+</html>

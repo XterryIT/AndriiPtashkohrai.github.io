@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andrii Ptashkohrai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Andrii Ptashkohrai</h1>
+      <p class="subtitle">Cybersecurity Engineer & AI Integration Specialist</p>
+      
+      <div class="btn-group">
+        
+          <a href="https://github.com/XterryIT" target="_blank" class="btn">GitHub</a>
+        
+          <a href="https://www.linkedin.com/in/ptashkohrai-andrii/" target="_blank" class="btn">LinkedIn</a>
+        
+          <a href="https://tryhackme.com/p/S3crEt.aNdr11" target="_blank" class="btn">TryHackMe</a>
+        
+      </div>
+    </header>
+    
+    <main>
+      <h1 id="advanced-threat-hunting-lab-detecting-apt29-cozy-bear-tactics">Advanced Threat Hunting Lab: Detecting APT29 (Cozy Bear) Tactics</h1>
+
+<p>In response to the increasing sophistication of state-sponsored cyber threats, I designed an advanced threat hunting laboratory to emulate and detect the tactics, techniques, and procedures (TTPs) of <strong>APT29 (Cozy Bear)</strong>. This project focuses on simulating real-world attacks using <strong>Atomic Red Team</strong>, capturing telemetry with <strong>Sysmon</strong>, and engineering robust detection rules in <strong>Splunk</strong>.</p>
+
+<h2 id="️-lab-architecture--tooling">🏗️ Lab Architecture &amp; Tooling</h2>
+
+<p>The environment was built using isolated virtual machines to safely execute malicious payloads while capturing comprehensive logs:</p>
+<ul>
+  <li><strong>Victim Machine:</strong> Windows 10 running Sysmon v15.15 (SwiftOnSecurity profile with custom additions) and Splunk Universal Forwarder.</li>
+  <li><strong>SIEM &amp; Analytics:</strong> Kali Linux hosting Splunk Enterprise v9.3.2 (acting as Indexer and Search Head).</li>
+  <li><strong>Emulation Framework:</strong> Atomic Red Team for executing MITRE ATT&amp;CK techniques.</li>
+</ul>
+
+<h2 id="️‍️-threat-profiling-apt29-cozy-bear">🕵️‍♂️ Threat Profiling: APT29 (Cozy Bear)</h2>
+<p>APT29 is a highly disciplined threat actor attributed to Russia’s SVR, known for long-term espionage and “living-off-the-land” (LotL) techniques. To effectively hunt this adversary, I focused on their preferred stealth mechanisms, such as avoiding malware drops in favor of native binaries (WMI, PowerShell), bypassing UAC, and exfiltrating data via alternative protocols.</p>
+
+<h2 id="️-attack-emulation--spl-detection-rules">🛡️ Attack Emulation &amp; SPL Detection Rules</h2>
+
+<p>Here are some of the key APT29 techniques I simulated, along with the custom Splunk Processing Language (SPL) queries I authored to detect them.</p>
+
+<h3 id="1-application-layer-protocol-dns-t1071004">1. Application Layer Protocol: DNS (T1071.004)</h3>
+<p><strong>The Attack:</strong> APT29 often uses DNS for Command and Control (C2) communication to bypass standard HTTP/HTTPS filtering. I simulated a high-volume DNS query attack (fast-flux/DGA behavior) to a target domain (<code class="language-plaintext highlighter-rouge">file.io</code> / <code class="language-plaintext highlighter-rouge">nip.io</code>).
+<strong>The Detection:</strong> The following SPL correlates PowerShell execution with a high volume of DNS queries to suspicious subdomains within a 1-minute window using the <code class="language-plaintext highlighter-rouge">transaction</code> command.</p>
+
+<pre><code class="language-spl">index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
+(EventCode=22 QueryName="atomicredteam-*.127.0.0.nip.io")
+OR ( EventCode=1 Image="*\\powershell.exe" CommandLine="*Resolve-DnsName *nip.io*" )
+| transaction ProcessGuid startswith="EventCode=1" maxspan=1m
+| table _time, host, User, QueryName, CommandLine, eventcount
+</code></pre>
+
+<h3 id="2-impair-defenses-disable-windows-event-logging-t1562002">2. Impair Defenses: Disable Windows Event Logging (T1562.002)</h3>
+<p><strong>The Attack:</strong> To blind defenders, attackers may terminate the EventLog service threads. I executed <code class="language-plaintext highlighter-rouge">Invoke-Phant0m</code>, a script designed to kill Windows Event Log Service threads without stopping the service itself.
+<strong>The Detection:</strong> I monitored Sysmon EventCode 11 (Process Access) to catch unauthorized scripts accessing the EventLog service.</p>
+
+<pre><code class="language-spl">index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational" 
+EventCode=11 Image="*\\powershell*" TargetFilename="*Invoke-Phant0m*" 
+User!="SYSTEM" User!="Administrator"
+| table _time, host, User, Image, TargetFilename
+</code></pre>
+
+<h3 id="3-bypass-user-account-control-t1548002">3. Bypass User Account Control (T1548.002)</h3>
+<p><strong>The Attack:</strong> Bypassing UAC by hijacking the registry keys associated with <code class="language-plaintext highlighter-rouge">eventvwr.msc</code> (<code class="language-plaintext highlighter-rouge">HKCU\Software\Classes\mscfile\shell\open\command</code>). This allows arbitrary code execution with <code class="language-plaintext highlighter-rouge">SYSTEM</code> privileges without prompting the user.
+<strong>The Detection:</strong> The rule flags instances where <code class="language-plaintext highlighter-rouge">mmc.exe</code> or <code class="language-plaintext highlighter-rouge">cmd.exe</code> launches <code class="language-plaintext highlighter-rouge">eventvwr.msc</code>, explicitly filtering out standard system accounts to minimize false positives.</p>
+
+<pre><code class="language-spl">index=main sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational" 
+EventCode=1 
+(Image="*\\mmc.exe" AND CommandLine="*eventvwr.msc*") OR 
+(Image="*\\cmd.exe" AND CommandLine="*/c eventvwr.msc*")
+| table _time, host, User, EventCode, Image, CommandLine
+</code></pre>
+
+<h3 id="4-html-smuggling-t1027006">4. HTML Smuggling (T1027.006)</h3>
+<p><strong>The Attack:</strong> Delivering malicious payloads (like ISOs or EXEs) hidden inside HTML/JavaScript, decrypted client-side via <code class="language-plaintext highlighter-rouge">mshta.exe</code> to bypass network proxies.
+<strong>The Detection:</strong> Direct monitoring of <code class="language-plaintext highlighter-rouge">mshta.exe</code> execution combined with suspicious file names originating from web requests.</p>
+
+<pre><code class="language-spl">index=main source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
+EventCode=1 Image="*\\mshta.exe" CommandLine="*T1027_006_remote.html*"
+| where NOT User IN ("SYSTEM","Administrator")
+| table _time, host, User, Image, CommandLine, ParentCommandLine
+</code></pre>
+
+<h2 id="-conclusions--takeaways">📉 Conclusions &amp; Takeaways</h2>
+
+<p>By emulating APT29, I demonstrated that relying purely on static signatures is insufficient. The use of “Living off the Land” binaries (like <code class="language-plaintext highlighter-rouge">mshta.exe</code> and <code class="language-plaintext highlighter-rouge">wmic.exe</code>) requires behavioral analysis and correlation across multiple Sysmon event types.</p>
+
+<p>A critical lesson learned was the necessity of rigorous filtering: initial rules generated significant noise from standard administrative tasks. By chaining events with Splunk’s <code class="language-plaintext highlighter-rouge">transaction</code> command and filtering out <code class="language-plaintext highlighter-rouge">SYSTEM</code> accounts, I drastically reduced false positives, creating high-fidelity alerts suitable for a production SOC environment.</p>
+
+<div class="back-link-container">
+  <a href="/" class="btn-back">← Back to Home</a>
+</div>
+
+    </main>
+  </div>
+</body>
+</html>

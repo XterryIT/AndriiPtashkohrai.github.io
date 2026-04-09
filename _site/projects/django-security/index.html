@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andrii Ptashkohrai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Andrii Ptashkohrai</h1>
+      <p class="subtitle">Cybersecurity Engineer & AI Integration Specialist</p>
+      
+      <div class="btn-group">
+        
+          <a href="https://github.com/XterryIT" target="_blank" class="btn">GitHub</a>
+        
+          <a href="https://www.linkedin.com/in/ptashkohrai-andrii/" target="_blank" class="btn">LinkedIn</a>
+        
+          <a href="https://tryhackme.com/p/S3crEt.aNdr11" target="_blank" class="btn">TryHackMe</a>
+        
+      </div>
+    </header>
+    
+    <main>
+      <h1 id="engineering-thesis-web-application-security-in-django">Engineering Thesis: Web Application Security in Django</h1>
+
+<p>As the culmination of my engineering degree in Cybersecurity, this project serves as a comprehensive guide and practical implementation of Application Security (AppSec) principles. The objective was to bridge the gap between theoretical vulnerabilities and practical framework implementation by developing a secure-by-design web application using the <strong>Python Django</strong> framework.</p>
+
+<h2 id="-project-scope--research">🎓 Project Scope &amp; Research</h2>
+
+<p>Modern web developers often lack the deep security knowledge required to harden their applications against sophisticated attacks. Through rigorous analysis of the Django framework’s internal security mechanisms, I established a framework of <strong>33 definitive security practices</strong> essential for production-grade applications.</p>
+
+<ul>
+  <li><strong>Focus Areas:</strong> Pre-implementation hardening, identity management, attack mitigation, and secure public deployment.</li>
+  <li><strong>Tech Stack:</strong> Python, Django, Nginx, Let’s Encrypt (TLS/SSL).</li>
+</ul>
+
+<h2 id="️-key-security-implementations">🛡️ Key Security Implementations</h2>
+
+<p>Rather than relying purely on theoretical research, I built a custom Django web application that actively enforced these 33 security practices. The implementation was divided into critical phases:</p>
+
+<h3 id="1-authentication--identity-management">1. Authentication &amp; Identity Management</h3>
+<ul>
+  <li>Designed a highly secure login and registration system.</li>
+  <li>Implemented strict password validation policies, account lockout mechanisms to prevent brute-force attacks, and secure session management to mitigate session hijacking.</li>
+</ul>
+
+<h3 id="2-mitigation-of-owasp-top-10-threats">2. Mitigation of OWASP Top 10 Threats</h3>
+<ul>
+  <li><strong>XSS (Cross-Site Scripting):</strong> Enforced template escaping and implemented robust Content Security Policies (CSP).</li>
+  <li><strong>CSRF (Cross-Site Request Forgery):</strong> Strictly validated CSRF tokens across all state-changing HTTP requests.</li>
+  <li><strong>SQL Injection:</strong> Exclusively utilized Django’s Object-Relational Mapper (ORM) with parameterized queries, completely eliminating raw SQL vulnerabilities.</li>
+</ul>
+
+<h3 id="3-secure-deployment-architecture-nginx--ssl">3. Secure Deployment Architecture (Nginx &amp; SSL)</h3>
+<p>A secure application is useless if the deployment environment is vulnerable. I architected a secure production deployment environment:</p>
+<ul>
+  <li><strong>Reverse Proxy:</strong> Configured <strong>Nginx</strong> as a reverse proxy to shield the internal Gunicorn/Django application server from direct internet exposure.</li>
+  <li><strong>TLS/SSL Encryption:</strong> Implemented strict HTTPS enforcement using SSL certificates, ensuring all data in transit is encrypted.</li>
+  <li><strong>Security Headers:</strong> Configured Nginx to inject critical HTTP security headers (e.g., <code class="language-plaintext highlighter-rouge">Strict-Transport-Security</code>, <code class="language-plaintext highlighter-rouge">X-Content-Type-Options</code>, <code class="language-plaintext highlighter-rouge">X-Frame-Options</code>) to protect clients against modern browser-based attacks.</li>
+</ul>
+
+<h2 id="-conclusions--takeaways">📉 Conclusions &amp; Takeaways</h2>
+
+<p>This engineering thesis proves that building secure applications requires a holistic approach—from the first line of Python code to the final Nginx server configuration. By standardizing these 33 security practices, the project provides a scalable blueprint for developers to integrate “Security by Design” into their software development lifecycle (SDLC), significantly reducing the attack surface of Django-based applications.</p>
+
+<div class="back-link-container">
+  <a href="/" class="btn-back">← Back to Home</a>
+</div>
+
+    </main>
+  </div>
+</body>
+</html>
