@@ -4,21 +4,27 @@ layout: default
 
 # About Me
 
-Hello! I am a **Cybersecurity Engineer** with a strong foundation in network security, threat hunting, and application security. My approach combines deep theoretical knowledge with aggressive, hands-on continuous learning.
+Hello! I am a Cybersecurity Engineer & AI Integration Specialist specializing in Secure Infrastructure, Risk Mitigation, and Compliance Automation. My approach combines deep technical expertise in threat defense with a business-centric mindset to align security frameworks (like NIST) with operational stability and continuity
 
 ## ⚡ Core Competencies & Technical Skills
 
 * **Defensive Security & SecOps:** Threat Hunting, Threat Intelligence, SIEM/SOAR Engineering (Splunk, Wazuh), EDR & XDR, Advanced SPL Queries, Endpoint Hardening (Sysmon, systemd), Digital Forensics (FTK Imager, HxD), Incident Response.
+* **Governance, Risk & Compliance (GRC):** NIST Framework, Risk Scoring (CVSS 3.1), Cloud Risk Assessment, Threat Modeling, Disaster Recovery Planning (DRP), Business Continuity (BCP), RTO/RPO Metrics.
 * **Offensive Security & Red Teaming:** Penetration Testing, Cloud Exploitation (AWS S3, DynamoDB), Privilege Escalation, Web App Vulnerabilities (OWASP Top 10), MITRE ATT&CK, Adversary Emulation (Atomic Red Team).
 * **Intelligence & OSINT:** Passive Reconnaissance, Image Intelligence (IMINT/Geolocation), Data Breach Analysis, Maltego, Recon-ng, Automated Web Scraping.
 * **AI & Machine Learning:** Local LLMs (Ollama, Llama 3.1), Agentic Workflows, Applied Data Science (CRISP-DM), Encrypted Traffic Analysis, Classification Models (Random Forest, Scikit-Learn).
 * **Cloud, Network & Infrastructure:** AWS, Google Cloud (GKE, Cloud Armor), Docker, Active Directory, Linux / Kali Linux, Network Architecture (Cisco CCNA), Wireless Security (LANforge Wi-Fi), Wireshark, Nmap.
 * **Software Engineering, AppSec & DBs:** Python (Automation, `psutil`, `BeautifulSoup`), C++, Dart/Flutter, Bash, SPL, SQL, Django (Secure Architecture), Git (GitHub, GitLab), PostgreSQL, MySQL, Redis.
-* **Governance, Risk & Compliance (GRC):** NIST Framework, Risk Scoring (CVSS 3.1), Cloud Risk Assessment, Threat Modeling, Disaster Recovery Planning (DRP), Business Continuity (BCP), RTO/RPO Metrics.
 * **Soft Skills:** Analytical Thinking, Problem-Solving, Adaptability, Time Management, Team Collaboration.
 * **Languages:** English (B2), Polish (C1), Ukrainian (Native), Russian (Native).
 
 ## 🚀 Featured Projects
+
+<div class="project-card">
+  <h3>Business-Centric Cloud Risk Assessment</h3>
+  <p>Conducted comprehensive risk analysis for a GCP-based e-commerce platform. Translated technical vulnerabilities into business impacts and designed <strong>Disaster Recovery (DRP)</strong> architectures utilizing <strong>Kubernetes</strong> and <strong>Cloud Armor</strong>.</p>
+  <a href="/projects/risk-assessment/" class="card-link">Read Case Study →</a>
+</div>
 
 <div class="project-card">
   <h3>AI-Powered SOC Automation</h3>
@@ -46,7 +52,7 @@ Hello! I am a **Cybersecurity Engineer** with a strong foundation in network sec
 
 <div class="project-card">
   <h3>Cloud Infrastructure Penetration Test</h3>
-  <p>Executed a full attack chain on a simulated cloud environment (HTB), exploiting <strong>AWS S3</strong> misconfigurations and local <strong>DynamoDB</strong> instances to achieve <code>root</code> privilege escalation.</p>
+  <p>Conducted a comprehensive cloud infrastructure audit and threat emulation, identifying critical AWS S3 misconfigurations and establishing remediation paths to prevent privilege escalation.</p>
   <a href="/projects/cloud-pentest/" class="card-link">Read Case Study →</a>
 </div>
 
@@ -54,12 +60,6 @@ Hello! I am a **Cybersecurity Engineer** with a strong foundation in network sec
   <h3>Advanced OSINT & Threat Reconnaissance</h3>
   <p>Conducted deep-dive passive reconnaissance using <strong>Python (BeautifulSoup)</strong>, <strong>Recon-ng</strong>, and <strong>Maltego</strong> to map organizational attack surfaces, analyze data breaches, and perform IMINT geolocation.</p>
   <a href="/projects/osint-reconnaissance/" class="card-link">Read Case Study →</a>
-</div>
-
-<div class="project-card">
-  <h3>Business-Centric Cloud Risk Assessment</h3>
-  <p>Conducted comprehensive risk analysis for a GCP-based e-commerce platform. Translated technical vulnerabilities into business impacts and designed <strong>Disaster Recovery (DRP)</strong> architectures utilizing <strong>Kubernetes</strong> and <strong>Cloud Armor</strong>.</p>
-  <a href="/projects/risk-assessment/" class="card-link">Read Case Study →</a>
 </div>
 
 <div class="project-card">
